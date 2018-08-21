@@ -244,7 +244,7 @@ fn prompt_open() {
             }
             rec.print();
             rec.id
-        };
+        }
         //println!("{:?}", lst.get(i));
         println!();
         println!("Type a command:\t(n)ext\t(m)enu\t(q)uit\t(d)iscard\t(e)dit");
