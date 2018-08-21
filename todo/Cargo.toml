@@ -5,4 +5,8 @@ authors = ["faeredia <bcooper1993@hotmail.com>"]
 
 [dependencies]
 time = "0.1.40"
-rusqlite = "*"
+
+[dependencies.rusqlite]
+version = "0.13.0"
+features = ["bundled"]
+
