@@ -8,7 +8,7 @@ use std::error::Error;
 use std::vec::Vec;
 use std::process::exit;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Todo {
     id: i64,
     pub title: String,
@@ -74,7 +74,7 @@ impl Todo{
     pub fn print(&self) {
         println!("ID:\t\t{}", self.id);
         println!("Date Created:\t{}", self.created_at().pretty_time());
-        println!("Date completed:\t{}", match self.completed_at() {
+        println!("Date Completed:\t{}", match self.completed_at() {
             Some(t) => t.pretty_time(),
             None => "".to_string(),
         });
@@ -164,6 +164,18 @@ fn user_input(prompt_text: &str) -> Result<String, Box<Error>> {
     //}
 }
 
+fn db_complete(id: i64){
+    let conn = Connection::open("mydb.sqlite").expect("failed to open db");
+    match conn.execute("
+    UPDATE todo
+    SET time_completed =  ?1
+    WHERE id = ?2;", &[ &time::get_time(), &id ])
+    {
+        Err(e) => println!("{}", e),
+        Ok(_) => (),
+    };
+}
+
 fn db_delete(id: i64){
     let conn = Connection::open("mydb.sqlite").expect("failed to open db");
     match conn.execute("
@@ -234,20 +246,27 @@ fn prompt_open() {
     let mut i: usize= 0;
     loop {
         println!("");
-        let id = { 
-            let row = lst.get(i);
-            let rec: &Todo;
-            match row {
-                Some(Ok(r)) => rec = r,
+        let row = 
+            match lst.get(i){
+                Some(Ok(t)) => t.clone(),
                 Some(Err(e)) => { println!("Error: {}",e); break;},
                 None => break,
-            }
-            rec.print();
-            rec.id
-        };
+            };
+        row.print();
+        //{ 
+        //    let row = lst.get(i).clone();
+        //    let rec: &Todo;
+        //    match row {
+        //        Some(Ok(r)) => rec = r,
+        //        Some(Err(e)) => { println!("Error: {}",e); break;},
+        //        None => break,
+        //    }
+        //    rec.print();
+        //    rec
+        //};
         //println!("{:?}", lst.get(i));
         println!();
-        println!("Type a command:\t(n)ext\t(m)enu\t(q)uit\t(d)iscard\t(e)dit");
+        println!("Type a command:\t(n)ext\t(b)ack\t(c)omplete\t(m)enu\t(q)uit\t(d)iscard\t(e)dit");
         //let mut line = String::new();
         let text = format!("(todo->open[{} of {}]) : ", i+1, lst.len());
         let line = user_input(&text).unwrap();
@@ -271,10 +290,17 @@ fn prompt_open() {
                 } else {
                     i = i -1
                 },
+            "c" | "complete" => {
+                if ! row.is_done() {
+                    db_complete(row.id);
+                    lst = db_fetch();
+                }
+            }
             "e" | "edit"    => (),
             "d" | "discard" => {
-                db_delete(id);
-                lst = db_fetch();  
+                db_delete(row.id);
+                lst = db_fetch();
+                if i > lst.len() - 1 { i = i - 1 }
             },
             _ => println!("Invalid command")
         }
