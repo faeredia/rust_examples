@@ -5,3 +5,4 @@ authors = ["faeredia <bcooper1993@hotmail.com>"]
 
 [dependencies]
 termion = "1"
+num-traits = "*"
