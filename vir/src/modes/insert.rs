@@ -13,7 +13,7 @@ use std::cmp::{max, min};
 
 use common::screen::{Screen, Bar};
 use common::render::{render_line};
-use common::curs::{XDir, move_lx};
+use common::curs::{Dir, move_line};
 
 fn print_bar(sc: &Screen, buf: &Vec<String>, bar: &Bar) {
     let stdin = stdin();
@@ -136,26 +136,28 @@ pub fn mode_insert( sc: &mut Screen, buf: &mut Vec<String> ) {
                 //if lx > 1 {
                 //    sc.linex = sc.linex - 1;
                 //}
-                move_lx(sc, buf, 1, XDir::Left);
+                move_line(sc, buf, 1, Dir::Left);
             }
             Key::Right      => { 
                 //if lx < len + 1 {
                 //    sc.linex = sc.linex + 1;
                 //}
-                move_lx(sc, buf, 1, XDir::Right);
+                move_line(sc, buf, 1, Dir::Right);
             },
             Key::Up         => {
-                if sc.liney > 1 {
-                    sc.liney = sc.liney - 1;
-                    sc.linex = min(sc.linex, buf.get(sc.liney as usize - 1).expect("whinge").len() as u16 + 1);
-                }
-                            },
+                //if sc.liney > 1 {
+                //    sc.liney = sc.liney - 1;
+                //    sc.linex = min(sc.linex, buf.get(sc.liney as usize - 1).expect("whinge").len() as u16 + 1);
+                //}
+                move_line(sc, buf, 1, Dir::Up);
+            },
             Key::Down       => {
-                if sc.liney < buf.len()  as u16{
-                    sc.liney = sc.liney + 1;
-                    sc.linex = min(sc.linex, buf.get(sc.liney as usize - 1).expect("whinge").len() as u16 + 1);
-                }
-                            },
+                //if sc.liney < buf.len()  as u16{
+                //    sc.liney = sc.liney + 1;
+                //    sc.linex = min(sc.linex, buf.get(sc.liney as usize - 1).expect("whinge").len() as u16 + 1);
+                //}
+                move_line(sc, buf, 1, Dir::Down);
+            },
             Key::Backspace  => {
                 if lx - 1 > 0 {
                     buf[ly - 1].remove(lx - 2);

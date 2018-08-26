@@ -1,6 +1,8 @@
 extern crate num_traits;
 use common::curs::num_traits::sign::signum;
 
+use std::cmp::{min};
+
 use common::screen::Screen;
 
 pub enum Dir {
@@ -14,20 +16,27 @@ pub enum Dir {
 //we could use enums and stuff.... that may stop dumb things....
 //this is easier though, business improvement for later. 
 
-//move the cursor num times. use sign to indicate direction
-pub fn move_cx(sc: &mut Screen, buf: &Vec<String>, num: i32) {
-    //needs to handle tabs
+pub fn move_cursor(sc: &mut Screen, buf: &Vec<String>, num: u16, dir: Dir) {
+    match dir {
+        Dir::Left   => {
+        },
+
+        Dir::Right  => {
+        },
+
+        Dir::Down   => {
+        },
+
+        Dir::Up     => {
+        },
+    }
 }
 
-pub fn move_cy(sc: &mut Screen, buf: &Vec<String>, num: i32) {
-
-}
-
-//move the 'line x' num times. use sign to indicate direction
-pub fn move_l(sc: &mut Screen, buf: &Vec<String>, num: u16, dir: XDir) {
+//move the line position  num times
+pub fn move_line(sc: &mut Screen, buf: &Vec<String>, num: u16, dir: Dir) {
     
     match dir {
-        XDir::Left => {
+        Dir::Left => {
             for _ in 0..num {
                 if sc.linex <= 1 {
                     break;
@@ -35,7 +44,8 @@ pub fn move_l(sc: &mut Screen, buf: &Vec<String>, num: u16, dir: XDir) {
                 sc.linex = sc.linex - 1;
             };
         },
-        XDir::Right => {
+
+        Dir::Right => {
             let len = match buf.get(sc.liney as usize - 1) {
                 Some(i) => i.len(),
                 None    => 0,
@@ -47,10 +57,35 @@ pub fn move_l(sc: &mut Screen, buf: &Vec<String>, num: u16, dir: XDir) {
                 sc.linex = sc.linex + 1;
             };
         },
-    }   
-}
 
-//move the 'line y' num times. use sign to indicate direction
-pub fn move_ly(sc: &mut Screen, buf: &Vec<String>, num: i32) {
+        Dir::Down => {
+            for _ in 0..num {
+                if sc.liney >= buf.len()  as u16{
+                    break;
+                }
+                sc.liney = sc.liney + 1;
+                
+                let len = match buf.get(sc.liney as usize - 1) {
+                    Some(i) => i.len(),
+                    None    => 0,
+                } as u16;              
+                sc.linex = min(sc.linex, len + 1);
+            }
+        },
 
+        Dir::Up => {
+            for _ in 0..num {
+                if sc.liney <= 1 {
+                    break;
+                }
+                sc.liney = sc.liney - 1;
+                
+                let len = match buf.get(sc.liney as usize - 1) {
+                    Some(i) => i.len(),
+                    None    => 0,
+                } as u16;
+                sc.linex = min(sc.linex, len + 1);
+             }
+        }
+    }
 }
