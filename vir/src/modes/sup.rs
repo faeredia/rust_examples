@@ -13,6 +13,8 @@ use std::process::exit;
 //mod insert;
 use modes::insert::mode_insert;
 use common::screen::{Screen, Bar};
+use common::curs::{move_line, move_cursor, Dir};
+use common::render::{render_screen};
 
 //mode_super() should accept a Screen and text buffer
 
@@ -24,7 +26,7 @@ pub fn mode_super(buf: &mut Vec<String>) {
         Ok((x, y))  => { maxx = x; maxy = y; },
         Err(_)      => { maxx = 46; maxy = 46; },
     }
-    let mut sc = Screen{maxx: maxx, maxy: maxy, cursx: 1, cursy: 1, linex: 1, liney: 1};
+    let mut sc = Screen{maxx: maxx, maxy: maxy, minx: 1, miny: 1, cursx: 1, cursy: 1, linex: 1, liney: 1};
 
     let bar = Bar{x: 1 as u16, y: sc.maxy, text: "-- SUPER --".to_string()};
 
@@ -43,6 +45,7 @@ pub fn mode_super(buf: &mut Vec<String>) {
     );
     //set the cursor position
     print!("{}", cursor::Goto(sc.cursx, sc.cursy));
+    render_screen(&mut sc, buf);
     stdout.flush().unwrap();
 
     //do something
@@ -56,13 +59,35 @@ pub fn mode_super(buf: &mut Vec<String>) {
             Key::Char(':')  => print!("mode_command"),
             Key::Char('\n') => print!("<enter>"),
             Key::Char('i')  => mode_insert(&mut sc, buf),//print!("mode_insert"), //mode_insert(),
+            Key::Char('x')  => {
+                if (sc.linex as usize) <= buf[sc.liney as usize - 1].len() {
+                     buf[sc.liney as usize - 1].remove(sc.linex as usize - 1);
+                     //sc.linex = sc.linex - 1;
+                 }                  
+            },
             Key::Char(c)    => print!("{}", c),
-            Key::Left       => print!("<left>"),
-            Key::Right      => print!("<right>"),
+            Key::Left       => {
+                move_line(&mut sc, buf, 1, Dir::Left);
+                move_cursor(&mut sc, buf, 1, Dir::Left);
+            },
+            Key::Right      => {
+                move_line(&mut sc, buf, 1, Dir::Right);
+                move_cursor(&mut sc, buf, 1, Dir::Right);
+            },
+            Key::Up         => {
+                move_line(&mut sc, buf, 1, Dir::Up);
+                move_cursor(&mut sc, buf, 1, Dir::Up);
+            },
+            Key::Down       => {
+                move_line(&mut sc, buf, 1, Dir::Down);
+                move_cursor(&mut sc, buf, 1, Dir::Down);
+            },
             Key::Esc        => exit(0),
             _               => (),
         }
-        redraw(&sc, &bar);
+        //redraw(&sc, &bar);
+        render_screen(&mut sc, buf);
+        print!("{}", cursor::Goto(sc.cursx, sc.cursy));
         stdout.flush().unwrap();
     }
 

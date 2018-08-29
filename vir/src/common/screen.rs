@@ -2,7 +2,7 @@
 
 pub struct Screen {
     pub minx: u16,
-    pub miny: u16
+    pub miny: u16,
     pub maxx: u16,
     pub maxy: u16,
     pub cursx: u16,
